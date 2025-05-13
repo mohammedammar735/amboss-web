@@ -43,11 +43,14 @@ RUN CHROMEDRIVER_URL="https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testin
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy the application code to the working directory
-COPY . /app
+# Copy the application code from the 'amboss_web' subdirectory to the working directory
+# This assumes your Dockerfile is at amboss_web/Dockerfile and the build context
+# is the root of the repository containing the amboss_web folder.
+COPY amboss_web/requirements.txt /app/requirements.txt
+COPY amboss_web/. /app/
 
 # Install Python dependencies
-# This step should now have the necessary build tools available
+# This step should now have the necessary build tools available and requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Start the app
