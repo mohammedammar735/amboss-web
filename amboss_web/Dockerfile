@@ -22,22 +22,12 @@ RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add
 # Install Google Chrome Stable
 RUN apt-get install -y google-chrome-stable
 
-# Install ChromeDriver dynamically based on the installed Chrome version
-# This is crucial because the ChromeDriver version must match the Chrome version
-RUN CHROME_VERSION=$(google-chrome --product-version) && \
-    echo "Detected Chrome version: ${CHROME_VERSION}" && \
-    # Extract the major version from the Chrome version string
-    CHROME_MAJOR_VERSION=$(echo ${CHROME_VERSION} | cut -d. -f1) && \
-    echo "Detected Chrome major version: ${CHROME_MAJOR_VERSION}" && \
-    # Get the corresponding ChromeDriver version from the LATEST_RELEASE file hosted by Google
-    # We use a fallback echo with an error message and check if the version was fetched successfully
-    CHROMEDRIVER_VERSION=$(wget -q -O - https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_MAJOR_VERSION} || echo "Error fetching chromedriver version for Chrome ${CHROME_MAJOR_VERSION}") && \
-    if [ "$CHROMEDRIVER_VERSION" = "Error fetching chromedriver version for Chrome ${CHROME_MAJOR_VERSION}" ]; then \
-        echo "Could not find a matching chromedriver version from Google Storage. This may happen if Chrome just updated and the corresponding chromedriver is not yet available or if there's a network issue." && exit 1; \
-    fi && \
-    echo "Corresponding ChromeDriver version: ${CHROMEDRIVER_VERSION}" && \
-    # Download the matching ChromeDriver, unzip it to /usr/local/bin/, make it executable, and clean up
-    wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip && \
+# Install ChromeDriver from a specific chrome-for-testing URL
+# WARNING: Hardcoding the ChromeDriver version like this can lead to incompatibility
+# when Google Chrome Stable updates to a newer version.
+RUN CHROMEDRIVER_URL="https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/136.0.7103.92/linux64/chromedriver-linux64.zip" && \
+    echo "Downloading ChromeDriver from: ${CHROMEDRIVER_URL}" && \
+    wget -O /tmp/chromedriver.zip ${CHROMEDRIVER_URL} && \
     unzip /tmp/chromedriver.zip -d /usr/local/bin/ && \
     chmod +x /usr/local/bin/chromedriver && \
     rm /tmp/chromedriver.zip
