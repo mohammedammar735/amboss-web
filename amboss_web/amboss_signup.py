@@ -23,7 +23,7 @@ options.add_argument("--headless")
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
 
-driver = webdriver.Chrome(service=Service("/usr/bin/chromedriver"), options=options)
+driver = webdriver.Chrome(executable_path="/usr/local/bin/chromedriver", options=options)
 wait = WebDriverWait(driver, 20)
 
 try:
