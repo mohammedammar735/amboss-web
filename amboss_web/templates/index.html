@@ -1,17 +1,34 @@
-const lines = data.output.split("\n");
+<script>
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Copied: " + text);
+        });
+    }
 
-const emailLine = lines.find(l => l.includes("📧 Email"));
-const passLine = lines.find(l => l.includes("🔐 Password"));
+    function createAccount() {
+        document.getElementById("output").innerText = "⏳ Creating account...";
+        fetch("/create_account", { method: "POST" })
+            .then(response => response.json())
+            .then(data => {
+                const lines = (data.output || "").split("\n");
+                const emailLine = lines.find(l => l.includes("📧 Email"));
+                const passLine = lines.find(l => l.includes("🔐 Password"));
 
-if (emailLine && passLine) {
-    const email = emailLine.split(": ")[1];
-    const password = passLine.split(": ")[1];
+                if (emailLine && passLine) {
+                    const email = emailLine.split(": ")[1];
+                    const password = passLine.split(": ")[1];
 
-    document.getElementById("output").innerHTML = `
-        ✅ Account created!<br><br>
-        📧 Email: <b style='cursor:pointer' onclick="copyToClipboard('${email}')">${email}</b><br>
-        🔐 Password: <b style='cursor:pointer' onclick="copyToClipboard('${password}')">${password}</b>
-    `;
-} else {
-    document.getElementById("output").innerText = "❌ Failed to parse account info. Please try again.";
-}
+                    document.getElementById("output").innerHTML = `
+                        ✅ Account created!<br><br>
+                        📧 Email: <b style='cursor:pointer' onclick="copyToClipboard('${email}')">${email}</b><br>
+                        🔐 Password: <b style='cursor:pointer' onclick="copyToClipboard('${password}')">${password}</b>
+                    `;
+                } else {
+                    document.getElementById("output").innerText = data.error || "❌ Failed to read account info. Try again.";
+                }
+            })
+            .catch(error => {
+                document.getElementById("output").innerText = "❌ Error: " + error;
+            });
+    }
+</script>
