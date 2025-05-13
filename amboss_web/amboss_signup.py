@@ -1,4 +1,3 @@
-
 import random
 import string
 import time
@@ -7,23 +6,25 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 
-# Generate fake user data
+# === Generate fake user data ===
 fake = Faker()
 first_name = fake.first_name()
 last_name = fake.last_name()
 email = f"{first_name.lower()}{random.randint(1000,9999)}@gmail.com"
 password = ''.join(random.choices(string.ascii_letters + string.digits + "!@#$%^&*", k=12))
 
-# Chrome options
+# === Chrome options for headless execution ===
 options = Options()
 options.add_argument("--headless")
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
 
-driver = webdriver.Chrome(executable_path="/usr/local/bin/chromedriver", options=options)
+# === Use installed ChromeDriver path (for Docker/Render) ===
+service = Service("/usr/local/bin/chromedriver")
+driver = webdriver.Chrome(service=service, options=options)
 wait = WebDriverWait(driver, 20)
 
 try:
@@ -35,15 +36,17 @@ try:
     sign_up_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[.//div[text()='Sign up']]")))
     driver.execute_script("arguments[0].click();", sign_up_button)
 
+    # Country
     country_input = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@aria-label='Country']")))
     country_input.send_keys("United States of America")
     time.sleep(1)
-    country_input.send_keys(u'\ue007')
+    country_input.send_keys(u'\ue007')  # ENTER
     time.sleep(1)
 
     next_btn = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[.//div[text()='Next']]")))
     driver.execute_script("arguments[0].click();", next_btn)
 
+    # Role
     role_div = wait.until(EC.element_to_be_clickable((By.XPATH, "//div[normalize-space(text())='Medical Student']")))
     driver.execute_script("arguments[0].click();", role_div)
 
@@ -51,6 +54,7 @@ try:
     wait.until(lambda d: next_btn2.is_enabled() and next_btn2.get_attribute("aria-disabled") != "true")
     driver.execute_script("arguments[0].click();", next_btn2)
 
+    # University
     university_input = wait.until(EC.element_to_be_clickable((By.XPATH, "//input[@aria-label='University']")))
     university_input.click()
     time.sleep(0.5)
@@ -58,6 +62,7 @@ try:
     time.sleep(1)
     university_input.send_keys(u'\ue007')
 
+    # Graduation year
     grad_year_input = wait.until(EC.element_to_be_clickable((By.XPATH, "//input[@aria-label='Expected graduation year']")))
     grad_year_input.click()
     time.sleep(0.5)
@@ -65,6 +70,7 @@ try:
     time.sleep(1)
     grad_year_input.send_keys(u'\ue007')
 
+    # Objective
     objective_input = wait.until(EC.element_to_be_clickable((By.XPATH, "//input[@aria-label='Current Objective']")))
     driver.execute_script("arguments[0].click();", objective_input)
     time.sleep(0.5)
@@ -72,9 +78,11 @@ try:
     time.sleep(1)
     objective_input.send_keys(u'\ue007')
 
+    # Name
     driver.find_element(By.NAME, "firstName").send_keys(first_name)
     driver.find_element(By.NAME, "lastName").send_keys(last_name)
 
+    # Checkboxes
     checkbox_names = ["isBetaTester", "hasConfirmedPhysicianDisclaimer"]
     for name in checkbox_names:
         try:
@@ -86,12 +94,17 @@ try:
         except Exception:
             pass
 
+    # Finish setup
     finish_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[.//div[text()='Finish set-up']]")))
     driver.execute_script("arguments[0].click();", finish_button)
 
-    result = f"✅ Account created\n📧 Email: {email}\n🔐 Password: {password}"
-    print(result)
+    # Final output (email + password only)
+    print("✅ Account created!")
+    print(f"📧 Email: {email}")
+    print(f"🔐 Password: {password}")
+
 except Exception as e:
-    print(f"❌ Error: {str(e)}")
+    print(f"❌ Script error: {str(e)}")
+
 finally:
     driver.quit()
