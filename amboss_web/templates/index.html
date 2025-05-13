@@ -1,0 +1,42 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AMBOSS Signup Bot</title>
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Copied: " + text);
+            });
+        }
+
+        function createAccount() {
+            document.getElementById("output").innerText = "⏳ Creating account...";
+            fetch("/create_account", { method: "POST" })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.output) {
+                        const lines = data.output.split("\n");
+                        const email = lines.find(l => l.includes("📧 Email")).split(": ")[1];
+                        const password = lines.find(l => l.includes("🔐 Password")).split(": ")[1];
+                        document.getElementById("output").innerHTML = `
+                            ✅ Account created!<br><br>
+                            📧 Email: <b style='cursor:pointer' onclick="copyToClipboard('${email}')">${email}</b><br>
+                            🔐 Password: <b style='cursor:pointer' onclick="copyToClipboard('${password}')">${password}</b>
+                        `;
+                    } else {
+                        document.getElementById("output").innerText = data.error || "Unknown error";
+                    }
+                })
+                .catch(error => {
+                    document.getElementById("output").innerText = "❌ Error: " + error;
+                });
+        }
+    </script>
+</head>
+<body style="font-family:sans-serif;text-align:center;margin-top:50px;">
+    <h1>AMBOSS Account Generator</h1>
+    <button onclick="createAccount()" style="padding:10px 20px;font-size:16px;">Create AMBOSS Account</button>
+    <div id="output" style="margin-top:30px;font-size:18px;"></div>
+</body>
+</html>
